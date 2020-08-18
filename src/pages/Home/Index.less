@@ -1,0 +1,87 @@
+@import '~antd/lib/style/themes/default.less';
+@import '~@/utils/utils.less';
+
+@font-face {
+  font-family: yjsz;
+  src: url('../../fonts/yjsz.TTF')
+}
+.image{
+  background-image: url('./../../images/panel.jpg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  margin-bottom: 24px;
+}
+.card_box {
+  width: 100%;
+  background-color: #051856;
+  border: 1px solid #20558b;
+  box-sizing: border-box;
+  position: relative;
+  :global {
+    img {
+      position: absolute;
+      z-index: 1;
+    }
+    img:nth-of-type(1) {
+      top: -1px;
+      left: -1px;
+    }
+    img:nth-of-type(2) {
+      top: -1px;
+      right: -1px;
+    }
+    img:nth-of-type(3) {
+      bottom: -1px;
+      right: -1px;
+    }
+    img:nth-of-type(4) {
+      bottom: -1px;
+      left: -1px;
+    }
+  }
+
+}
+
+.title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffffff;
+  height: 35px;
+  line-height: 35px;
+  position: relative;
+  padding-left: 15px;
+
+  :global {
+    span {
+      position: absolute;
+      font-size: 12px;
+      margin-right: 10px;
+      line-height: 32px;
+      cursor: pointer;
+      right: 5px;
+      z-index: 999;
+      &:hover {
+        color: @primary-color;
+      }
+    }
+
+  }
+}
+
+.content {
+  line-height: 60px;
+  color: #20dbfd;
+  text-shadow: 0 0 25px #00d8ff;
+  font-size: 46px;
+  font-family: 'yjsz';
+  text-align: center;
+}
+.homeCustomCard{
+  margin-bottom: 24px;
+}
+@media only screen and (max-width: @screen-md) {
+  .homeCustomCard,.image{
+    margin-bottom: 12px;
+  }
+}

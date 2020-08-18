@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<table>
+  <tr>
+    <th>ID</th>
+    <th>Primary ID</th>
+    <th>Info</th>
+    <th>Data</th>
+    <th>Last Update</th>
+    <th>Status</th>
+  </tr>
+  <tr style="cursor:pointer;" ng-click="showData(device)" ng-repeat="(id, device) in devices">
+    <td>{{ device.key }}</td>
+    <td>{{ device.name }}</td>
+    <td ng-bind-html="getInfo(device)"></td>
+    <td>{{ device.address.length }}</td>
+    <td>{{ device.age }}</td>
+    <td>
+      <div class="online" ng-style="{background: !device.error ? '#4CAF50' : '#f44336'}">
+        <md-tooltip md-direction="bottom">{{ device.error ? device.error : 'OK' }}</md-tooltip>
+      </div>
+    </td>
+  </tr>
+</table>
+
+<script>
+
+
+  (function(scope) {
+
+    scope.send({topic: 'getDevices'});
+    scope.devices = [];
+
+    scope.showData = function(device){
+      scope.send({topic: 'deviceData', payload: device});
+    }
+
+    scope.getInfo = function(device){
+      var text = '';
+      var info = device.SlaveInformation;
+
+      for(key in info){
+        text += `<p><b>${key}</b>: ${info[key]}</p>`;
+      }
+
+      return text;
+    }
+
+    scope.$watch('msg', function(data) {
+      if(data && data.topic){
+        switch(data.topic){
+          case "getDevices":
+            if(data.payload && data.payload.devices)
+              scope.devices = data.payload.devices;
+            break;
+        }
+      }
+    });
+
+  })(scope);
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,40 @@
+@import '~antd/lib/style/themes/default.less';
+
+.globalFooter {
+  overflow: hidden;
+  padding: 0 16px;
+  margin: 12px 0 12px 0;
+  text-align: center;
+  .links {
+    margin-bottom: 8px;
+
+    a {
+      color: #ffffff;
+      transition: all 0.3s;
+
+      &:not(:last-child) {
+        margin-right: 40px;
+      }
+
+      &:hover {
+        color: @text-color;
+      }
+    }
+  }
+  .logo {
+    width: 32px;
+    height: 32px;
+    margin-right: 12px;
+  }
+  .copyright {
+    font-size: @font-size-base;
+  }
+}
+
+@media only screen and (max-width: @screen-xs) {
+  .globalFooter {
+    .copyright {
+      font-size: 12px;
+    }
+  }
+}

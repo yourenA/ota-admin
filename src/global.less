@@ -1,0 +1,334 @@
+@import '~antd/lib/style/themes/default.less';
+html,
+body,
+#root {
+  height: 100%;
+}
+.colorWeak {
+  filter: invert(80%);
+}
+
+.ant-layout {
+  min-height: 100vh;
+  background: #f2f2f2 !important;
+}
+.ant-menu-dark{
+  background: #000 !important;
+}
+.ant-layout-footer{
+  color: #fff !important;
+  background: linear-gradient(301deg, #0d83d0 0%, #2ba8fb 100%)!important;
+}
+.ant-card{
+  box-shadow: 0px 1px 3px 0px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 2px 1px -1px rgba(0,0,0,0.12);
+  margin-right:auto !important;
+  margin-left:auto !important;
+  border-radius: 4px !important;
+}
+.ant-table-title{
+  background: #ffffff;
+}
+.ant-page-header-heading-title{
+  font-size: 15px !important;
+  .icon{
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    vertical-align: text-bottom;
+  }
+}
+.ant-page-header, .ant-breadcrumb {
+  margin-bottom: 0!important;
+  font-size: 15px !important;
+  color: rgba(0, 0, 0, 0.85);
+}
+.custom-card {
+  .ant-form-item{
+    margin-bottom: 0px !important;
+  }
+}
+.text-center{
+  text-align: center !important;
+}
+canvas {
+  display: block;
+}
+
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.globalSpin {
+  width: 100%;
+  margin: 40px 0 !important;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+.ant-layout-content {
+  height: 100%;
+}
+.noMarginBottom .ant-tabs-bar {
+  margin-bottom: 0 !important;
+}
+p{
+  margin-bottom: 0;
+}
+
+.primary_text{
+  cursor: pointer;
+  color: @primary-color;
+  text-decoration: underline;
+}
+.operate-content{
+  margin-bottom: 16px;
+}
+.ant-back-top {
+  right: 62px !important;
+}
+.ant-tabs-nav .ant-tabs-tab{
+  margin-right:16px !important;
+}
+.backup-inner{
+
+  height: 40px;
+  width: 40px;
+  line-height: 40px;
+  border-radius: 4px;
+  background-color: rgba(0,0,0,0.4);
+  color: #fff;
+  text-align: center;
+  font-size: 20px;
+
+  img{
+    margin-top: -5px;
+    width: 20px;
+    height: 20px;
+  }
+}
+.ant-divider, .ant-divider-vertical{
+  margin: 0px 4px !important;
+}
+.ant-modal .ant-form-item{
+  margin-bottom: 5px;
+}
+.ant-table{
+  overflow-x:auto ;
+}
+.ant-table > .ant-table-content  .ant-table-thead {
+  tr th {
+    //white-space: nowrap;
+  }
+}
+.ant-table > .ant-table-content  .ant-table-body{
+  thead tr th{
+    //white-space:nowrap;
+  }
+  tbody{
+    //white-space:nowrap;
+    tr:nth-of-type(odd) {
+      background: #fff;
+
+    }
+    tr:nth-of-type(even) {
+      background: #fff;
+    }
+  }
+}
+.ant-table-small{
+  //overflow-x:auto ;
+}
+.ant-table-small > .ant-table-content  .ant-table-thead {
+  margin: 0 !important;
+  tr th {
+    font-size: 13px;
+    background: #eeeeee !important;
+    //color: #ffffff;
+    //white-space: nowrap;
+  }
+}
+.ant-table-small > .ant-table-content  .ant-table-body{
+  margin:  0 !important;
+  thead tr th{
+    font-size: 13px;
+    background: #f2f2f2 !important;
+    //color: #ffffff;
+    //white-space:nowrap;
+  }
+  tbody{
+    font-size: 13px;
+    //white-space:nowrap;
+    tr:nth-of-type(odd) {
+      background: #fff;
+    }
+    tr:nth-of-type(even) {
+      background: #fff;
+    }
+  }
+}
+
+.ant-table-expanded-row{
+  background: #ffe !important;
+}
+
+
+
+.ant-transfer-list{
+  width: 200px !important;
+}
+.ant-tabs .ant-tabs-left-content{
+  padding-left: 0 !important;
+}
+.ant-tabs-left-bar{
+   .ant-tabs-tab{
+     margin-right: 0 !important;
+     margin-bottom: 0 !important;
+    transition: none !important;
+   }
+  .ant-tabs-ink-bar{
+    width: 0 !important;
+  }
+  .ant-tabs-tab-active{
+    background: @primary-color;
+    color:#ffffff !important;
+  }
+}
+.chart{
+  position: relative;
+  .chart_empty{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+  }
+}
+.page-router-tab{
+  width: 100%;
+  overflow: hidden;
+  margin-bottom: 24px;
+  .ant-radio-group{
+    float: right;
+  }
+}
+.page-header{
+  background: #ffffff;
+  .ant-page-header{
+    max-width: 1000px;
+    margin: 0 auto;
+    padding-left: 0 !important;
+  }
+}
+
+.info-page-container{
+  max-width: 1000px;
+  margin: 36px auto;
+  position: relative;
+}
+.ant-badge-status-dot{
+  width: 10px !important;
+  height: 10px !important;
+}
+.baidu-map{
+  width: 100%;
+  height: 400px;
+}
+.ant-descriptions-title{
+  margin-bottom: 10px !important;
+}
+.ant-table-body{
+  width: 100%;
+  .ant-tag{
+    font-size: 14px !important;
+  }
+  .ant-avatar{
+    background-Color: @primary-color;
+    font-size: 12px !important;
+    margin:0 2px;
+  }
+
+}
+.ant-descriptions-bordered .ant-descriptions-item-label, .ant-descriptions-bordered .ant-descriptions-item-content{
+  padding: 6px 12px !important;
+  .ant-avatar{
+    background-Color: @primary-color;
+    font-size: 12px !important;
+  }
+  .value{
+    position: relative;
+    margin-right: 20px;
+    margin-left: 5px;
+    top: 2px;
+    //top: 2px;
+    //left: 5px;
+  }
+}
+.page-card-image{
+  position: absolute;
+  right: -20px;
+  top: -20px;
+  opacity: 0.6;
+  transform: scale(0.5) ;
+}
+.ant-card-type-inner{
+  .ant-card-head-title{
+    color: @primary-color;
+    font-size: 18px !important;
+    font-weight: 500;
+    .anticon{
+      margin-right: 5px;
+    }
+  }
+}
+.copy-icon-key{
+  font-size: 16px;
+  cursor: pointer;
+  margin-left: 6px;
+  &:hover{
+    color: @primary-color;
+  }
+}
+.react-json-view{
+  padding: 6px;
+}
+.custom-disabled{
+  background: #fefefe !important;
+  color:#826969 !important;
+}
+
+.data-desc{
+  .ant-descriptions-view{
+    background: #ffffff;
+  }
+}
+@media screen and (max-width: @screen-sm) {
+  .ant-card-body{
+    padding: 12px !important;
+  }
+  .page-header .ant-page-header{
+    padding-left: 6px !important;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #e3e3e3
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #c6c6c6
+}
+
+::-webkit-scrollbar-corner {
+  background-color: #c6c6c6
+}
+.whole-data .ant-table-row-expand-icon{
+  display: none !important;
+}
