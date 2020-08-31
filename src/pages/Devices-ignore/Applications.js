@@ -275,12 +275,50 @@ class TableList extends PureComponent {
     );
     const columns = [
       {
-        title: 'GUID',
-        dataIndex: 'guid',
+        title: '序号',
+        width: 80,
+        key: '_index',
+        render: (text, record,index) => {
+          const {
+            applications: { meta },
+          } = this.props;
+          return <p className={'index'}>{((meta.current_page - 1) * meta.per_page) + (index + 1)}</p>;
+        },
       },
       {
         title:'版本',
         dataIndex: 'version',
+      },
+      {
+        title:'状态',
+        dataIndex: 'status',
+        render: (value, record,index) => {
+          let type = '';
+          let color = '';
+          let text = '';
+          switch (value) {
+            case 1:
+              type = 'check-circle', color = '#00c546', text = '启用';
+              break;
+            case -1:
+              type = 'close-circle', color = '#fe1b2e', text = '停用';
+              break;
+            default:
+              type = 'close-circle', color = '#9a9a9a', text = '未知';
+              break;
+          }
+          return <Fragment> <Icon type={type} theme="twoTone" className="table-icon" twoToneColor={color}/>{text}</Fragment>;
+
+        }
+      },
+      {
+        title:'适用的RTU基板型号',
+        dataIndex: 'applicable_substrate_types',
+        render: (text, record,index) => {
+          return text.map((item,index)=>{
+            return <Tag color="purple" key={index}>{item.name}</Tag>
+          })
+        },
       },
       {
         title:'文件大小(字节)',
@@ -361,7 +399,7 @@ class TableList extends PureComponent {
       <div>
         <div className="page-header">
           <PageHeader
-            title={'固件'}
+            title={'固件列表'}
           />
         </div>
 
@@ -425,6 +463,7 @@ class TableList extends PureComponent {
             visible={this.state.editModal}
             centered
             onOk={this.handleEdit}
+            width={600}
             onCancel={()=> {
               this.setState({editModal: false, editRecord: {}})
             }}

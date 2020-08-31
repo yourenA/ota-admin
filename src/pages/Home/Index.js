@@ -18,28 +18,28 @@ class BasicList extends PureComponent {
     done: false,
     page: 1,
     per_page: 30,
+    substrates: 0,
     firmwares: 0,
-    products: 0,
   };
 
   componentDidMount() {
     console.log(this)
     const that = this;
+    request(`/substrates`, {
+      method: 'GET',
+    }).then((response)=> {
+      if (response.status === 200) {
+        that.setState({
+          substrates: response.data.meta.total
+        })
+      }
+    })
     request(`/firmwares`, {
       method: 'GET',
     }).then((response)=> {
       if (response.status === 200) {
         that.setState({
           firmwares: response.data.meta.total
-        })
-      }
-    })
-    request(`/products`, {
-      method: 'GET',
-    }).then((response)=> {
-      if (response.status === 200) {
-        that.setState({
-          products: response.data.meta.total
         })
       }
     })
@@ -52,8 +52,8 @@ class BasicList extends PureComponent {
           <div className="info-page-container">
             <Card className={`animated zoomIn ${styles.image}`}>
               <CardContent>
-                <p style={{margin: '30px auto', fontSize: '32px', textAlign: 'center', color: '#000000'}}>
-                  OTA远传升级平台
+                <p style={{margin: '30px auto', fontSize: '32px', textAlign: 'center', color: '#FFF'}}>
+                  广州辂轺RTU管理平台
                 </p>
 
               </CardContent>
@@ -65,7 +65,7 @@ class BasicList extends PureComponent {
                   <img src="http://www.17sucai.com/preview/690548/2018-04-27/map/img/bj-2.png" alt=""/>
                   <img src="http://www.17sucai.com/preview/690548/2018-04-27/map/img/bj-3.png" alt=""/>
                   <img src="http://www.17sucai.com/preview/690548/2018-04-27/map/img/bj-4.png" alt=""/>
-                  <div className={styles.title}>固件个数<span onClick={()=> {
+                  <div className={styles.title}>固件数量<span onClick={()=> {
                     const {dispatch} = this.props;
                     dispatch(routerRedux.push(`/firmwares`));
                   }}> {
@@ -82,15 +82,15 @@ class BasicList extends PureComponent {
                   <img src="http://www.17sucai.com/preview/690548/2018-04-27/map/img/bj-2.png" alt=""/>
                   <img src="http://www.17sucai.com/preview/690548/2018-04-27/map/img/bj-3.png" alt=""/>
                   <img src="http://www.17sucai.com/preview/690548/2018-04-27/map/img/bj-4.png" alt=""/>
-                  <div className={styles.title}>产品个数<span onClick={()=> {
+                  <div className={styles.title}>RTU基板数量<span onClick={()=> {
                     const {dispatch} = this.props;
-                    dispatch(routerRedux.push(`/products`));
+                    dispatch(routerRedux.push(`/substrates`));
                   }}> {
                     formatMessage({
                       id: 'app.detail',
                     })
                   }</span></div>
-                  <div className={styles.content}><CountUp end={this.state.products}/></div>
+                  <div className={styles.content}><CountUp end={this.state.substrates}/></div>
                 </div>
               </Col>
             </Row>

@@ -93,7 +93,7 @@ import find from 'lodash/find'
               </Avatar>
 
               <Typography component="h1" variant="h5">
-                广州辂轺OTA远传升级平台
+                广州辂轺RTU管理平台
               </Typography>
             </div>
 

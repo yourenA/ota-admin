@@ -4,8 +4,10 @@ import request from '@/utils/request';
 import {routerRedux} from 'dva/router';
 import moment from 'moment';
 import {formatMessage, FormattedMessage} from 'umi/locale';
-
+import find from 'lodash/find'
+import sortBy from 'lodash/sortBy'
 import {Link} from 'dva/router';
+
 import {
   Row,
   Col,
@@ -24,27 +26,18 @@ import {
   Divider,
   Steps,
   Radio,
-  Table, Tag,Popconfirm ,notification 
+  Table, Tag, Popconfirm, notification, Drawer, Descriptions,
 } from 'antd';
 import DescriptionList from '@/components/DescriptionList';
 import styles from './../Devices-ignore/TableList.less';
-import find from 'lodash/find'
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
-
+import  SubstrateTypes from './SubstrateTypes.js'
+import  MulAddSubstrate from './MulAddSubstrate.js'
+import AddOrEditSubstrate from './AddOrEditSubstrate';
 const FormItem = Form.Item;
-const {Step} = Steps;
-const {TextArea} = Input;
-const {Option} = Select;
-const RadioGroup = Radio.Group;
-const {Description} = DescriptionList;
-const getValue = obj =>
-  Object.keys(obj)
-    .map(key => obj[key])
-    .join(',');
-const statusMap = ['default', 'processing', 'success', 'error'];
-const status = ['关闭', '运行中', '已上线', '异常'];
-
+const Option = Select.Option;
+const { confirm } = Modal;
 /* eslint react/no-multi-comp:0 */
 @connect(({gateways, loading, system_configs}) => ({
   gateways, system_configs
@@ -71,7 +64,9 @@ class TableList extends PureComponent {
     current: 0,
     refresh_second: 1,
     stepData: {},
-    mqttInfo: {}
+    mqttInfo: {},
+    selectedRowKeys:[],
+    data:[]
   };
 
 
@@ -97,13 +92,26 @@ class TableList extends PureComponent {
       params = {
         page: 1,
         per_page: 30,
-        gateway_id: '',
-        name: '',
+        substrate_type_id: '',
+        serial_number: '',
       }
     }
 
     const that = this;
-    that.handleSearch(params)
+    that.handleSearch(params);
+
+    request(`/all_substrate_types`,{
+      method:'GET',
+      params:{
+        order_direction:'desc'
+      }
+    }).then((response)=>{
+      if(response.status===200){
+        that.setState({
+          data:response.data.data
+        })
+      }
+    });
 
   }
 
@@ -157,6 +165,7 @@ class TableList extends PureComponent {
         console.log('handleSearch callback')
         that.setState({
           ...values,
+          selectedRowKeys:[]
         }, function () {
           setTimeout(function () {
             dispatch({
@@ -165,7 +174,7 @@ class TableList extends PureComponent {
             });
           },1000)
 
-          dispatch(routerRedux.replace(`/products/list?page=${this.state.page}&per_page=${this.state.per_page}`)
+          dispatch(routerRedux.replace(`/substrates/list?page=${this.state.page}&per_page=${this.state.per_page}&serial_number=${this.state.serial_number}&substrate_type_id=${this.state.substrate_type_id}`)
           )
         });
         if (cb) cb()
@@ -177,8 +186,8 @@ class TableList extends PureComponent {
     form.resetFields();
     this.handleSearch({
       page: 1,
-      gateway_id: '',
-      name: '',
+      serial_number: '',
+      substrate_type_id: '',
       per_page: 30
     })
   }
@@ -190,20 +199,22 @@ class TableList extends PureComponent {
     return (
       <Form layout="inline">
         <Row gutter={{md: 8, lg: 8, xl: 16}}>
-          <Col md={8} sm={24}>
-            <FormItem label={<FormattedMessage
-              id="menu.gateways.ID"
-            />}>
-              {getFieldDecorator('gateway_id')(<Input placeholder=""/>)}
+          <Col md={6} sm={24}>
+            <FormItem label={'基板型号'}>
+              {getFieldDecorator('substrate_type_id')(
+                <Select allowClear>
+                  {this.state.data.map((item,index)=>{
+                    return <Option key={index} value={item.id}>
+                      {item.name}
+                    </Option>
+                  })}
+                </Select>
+              )}
             </FormItem>
           </Col>
-          <Col md={8} sm={24}>
-            <FormItem label={
-              <FormattedMessage
-                id="menu.gateways.name"
-              />
-            }>
-              {getFieldDecorator('name')(<Input placeholder=""/>)}
+          <Col md={6} sm={24}>
+            <FormItem label={'序列号'}>
+              {getFieldDecorator('serial_number')(<Input placeholder=""/>)}
             </FormItem>
           </Col>
           <Col md={8} sm={24}>
@@ -219,8 +230,8 @@ class TableList extends PureComponent {
                   this.handleSearch({
                     page: this.state.page,
                     per_page: this.state.per_page,
-                    name: values.name ? values.name : '',
-                    gateway_id: values.gateway_id ? values.gateway_id : '',
+                    serial_number: values.serial_number ? values.serial_number : '',
+                    substrate_type_id: values.substrate_type_id ? values.substrate_type_id : '',
                   })
 
                 });
@@ -236,6 +247,26 @@ class TableList extends PureComponent {
                   defaultMessage="重置"
                 />
               </Button>
+              <Button icon="plus" type="primary"
+                      style={{marginRight:'8px',marginLeft:'8px'}} onClick={
+                ()=>{
+                  this.setState({
+                    addModal:true
+                  })
+                }
+              }>
+              新建RTU基板
+            </Button>
+            <Button icon="plus" type="primary"
+                    style={{marginRight:'8px'}} onClick={
+              ()=>{
+                this.setState({
+                  mulAddModal:true
+                })
+              }
+            }>
+              批量新建RTU基板
+            </Button>
             </span>
           </Col>
         </Row>
@@ -269,29 +300,225 @@ class TableList extends PureComponent {
     return this.renderSimpleForm()
   }
 
+  handleEdit = ()=> {
+    const formValues = this.EditForm.props.form.getFieldsValue();
+    console.log('formValues', formValues)
+    const that = this;
+    this.props.dispatch({
+      type: 'gateways/edit',
+      payload: {
+        id:this.state.editRecord.id,
+        ...formValues,
+      },
+      callback: function () {
+        message.success('修改成功')
+        that.setState({
+          editModal: false,
+        });
+        that.handleSearch({
+          page: that.state.page,
+          per_page: that.state.per_page,
+        });
+      }
+    });
+  }
+  handleMulAdd=()=>{
+    const formValues = this.MulAddForm.props.form.getFieldsValue();
+    console.log('formValues', formValues)
+    const that = this;
+    this.props.dispatch({
+      type: 'gateways/mulAdd',
+      payload: {
+        ...formValues,
+      },
+      callback: function () {
+        message.success('批量新建RTU基板成功')
+        that.setState({
+          mulAddModal: false,
+        });
+        that.handleSearch({
+          page: that.state.page,
+          per_page: that.state.per_page,
+        });
+      }
+    });
+  }
+  handleAdd = ()=> {
+    const formValues = this.AddForm.props.form.getFieldsValue();
+    console.log('formValues', formValues)
+    const that = this;
+    this.props.dispatch({
+      type: 'gateways/add',
+      payload: {
+        ...formValues,
+      },
+      callback: function () {
+        message.success('新建RTU基板成功')
+        that.setState({
+          addModal: false,
+        });
+        that.handleSearch({
+          page: that.state.page,
+          per_page: that.state.per_page,
+        });
+      }
+    });
+  }
+  onSelectChange = selectedRowKeys => {
+    console.log('selectedRowKeys changed: ', selectedRowKeys);
 
+    this.setState({ selectedRowKeys });
+  };
+  selectMethod=(type)=>{
+    const selectedRowKeys=this.state.selectedRowKeys;
+    if(this.state.selectedRowKeys.length===0){
+      notification.error({
+        message:'请先选择基板',
+      });
+      return false
+    }
+    if(type===1){
+      const {
+        gateways: {data},
+      } = this.props;
+      let arr=[];
+      let numberArr=[];
+      for(let i=0;i<this.state.selectedRowKeys.length;i++){
+        const findObj=find(data,(o)=>o.id===this.state.selectedRowKeys[i]);
+        arr.push(findObj)
+      }
+      const  sortArr=sortBy(arr,['serial_number']);
+      console.log('arr',arr)
+      console.log('sortArr',sortArr)
+      for(let i=0;i<sortArr.length;i++){
+        numberArr.push(sortArr[i].serial_number)
+      }
+      console.log('numberArr',numberArr)
+      let firstCode=arr[0].substrate_type?arr[0].substrate_type.product_code:'';
+      for(let i=0;i<sortArr.length;i++){
+        if(sortArr[i].substrate_type.product_code!==firstCode){
+          notification.error({
+            message: '请确保当前打印序列号的产品码相同',
+          });
+          return false
+        }
+      }
+      window.open(`${window.location.origin}/print?productCode=${firstCode}&numbers=${numberArr}`,"","width=500")
+      // window.location.href=`${window.location.origin}/print?productCode=${firstCode}&numbers=${numberArr}`
+      // ipcRenderer.send('openSNModal',firstCode,numberArr);
+    }else if(type===2){
+      const that=this
+      confirm({
+        title: '确定要发送更新RTU基板命令吗?',
+        onOk() {
+          request(`/upgrade_substrate`, {
+            method: 'POST',
+            data:{
+              substrate_ids:that.state.selectedRowKeys
+            }
+          }).then((response)=> {
+            console.log(response);
+            if(response.status===200){
+              notification.success({
+                message: formatMessage({id: 'app.successfully'}, {type:'RTU基板更新命令发送'}),
+              });
+              that.handleSearch({
+                page: that.state.page,
+                per_page: that.state.per_page,
+              })
+            }
+          })
+        },
+        onCancel() {
+          console.log('Cancel');
+        },
+      });
+
+    }
+  }
   render() {
     const {
       gateways: {data, loading, meta, pageLoaded},
     } = this.props;
+    const {editRecord,selectedRowKeys}=this.state
     const {dispatch} = this.props;
+    const rowSelection = {
+      selectedRowKeys,
+      onChange: this.onSelectChange,
+    };
     const columns = [
       {
-        title: '名称',
-        dataIndex: 'name',
+        title: '序号',
+        width: 50,
+        key: '_index',
+        render: (text, record,index) => {
+          const {
+            gateways: { meta },
+          } = this.props;
+          return <p className={'index'}>{((meta.current_page - 1) * meta.per_page) + (index + 1)}</p>;
+        },
+      },
+      {
+        title: '序列号',
+        dataIndex: 'serial_number',
+      },
+      {
+        title: 'RTU基板型号',
+        dataIndex: 'substrate_type',
         render: (text, record)=> {
-          return <Tag onClick={()=> {
-            dispatch(routerRedux.push(`/products/info/devices?id=${record.id}`));
-          }} color="blue" style={{cursor: 'pointer'}}>{text}</Tag>
+          return  <Tag color="purple" >{record.substrate_type.name}</Tag>
         }
       },
       {
-        title:'创建时间',
-        dataIndex: 'created_at',
+        title: 'RTU基板型号产品码',
+        dataIndex: 'substrate_type2',
+        render: (text, record)=> {
+          return record.substrate_type.product_code
+        }
       },
       {
-        title:'备注',
-        dataIndex: 'remark',
+        title: '当前固件版本',
+        dataIndex: 'current_firmware_version',
+      },
+      {
+        title: '升级状态',
+        dataIndex: 'is_upgrading',
+        render: (text, record)=> {
+          return text === 1 ?<Badge status={ 'processing'}
+                                   text={ '正在升级' }/>:""
+        }
+      },
+      {
+        title:'操作',
+        dataIndex: 'operate',
+        render:(text,record)=>{
+          return <div>
+            <Button onClick={()=>{
+              this.setState({
+                editRecord:record,
+                detailModal:true
+              })
+            }} style={{marginRight:'5px'}} type="primary" icon='eye'
+                    size="small">详情</Button>
+            <Button onClick={()=>{
+              this.setState({
+                editRecord:record,
+                editModal:true
+              })
+            }} style={{marginRight:'5px'}} type="primary" icon='edit'
+                    size="small"><FormattedMessage
+              id="app.edit"
+            /></Button>
+            <Popconfirm title={formatMessage({id: 'app.delete.info'})}
+                        onConfirm={()=>this.handleDelete(record)}>
+              <Button  type="danger" icon='delete'
+                       size="small"><FormattedMessage
+                id="app.delete"
+                defaultMessage="名称"
+              /></Button>
+            </Popconfirm>
+          </div>
+        }
       },
     ];
     const paginationProps = {
@@ -310,15 +537,32 @@ class TableList extends PureComponent {
     };
     const renderTable=
       <CardContent>
-        <div className={styles.tableList}>
+        <div className={styles.tableList} >
+          <div className={styles.tableListForm} >{this.renderForm()}</div>
           <div className={styles.tableListOperator}>
+            <Button icon="setting" type="danger"
+                    style={{marginRight:'8px'}} onClick={
+              ()=>{
+                this.setState({
+                  infoModal:true
+                })
+
+              }
+            }>
+              RTU基板类型管理
+            </Button>
+              已选 {this.state.selectedRowKeys.length} 个序列号
+              <Button onClick={()=>{this.selectMethod(1)} } icon={'printer'} style={{marginLeft:'10px'}}>批量打印序列号</Button>
+              <Button  onClick={()=>{this.selectMethod(2)} }  icon={'cloud-sync'}   type={'primary'} >批量更新RTU基板</Button>
           </div>
           <Table
+            rowSelection={rowSelection}
             style={{backgroundColor: '#fff'}}
             className="custom-small-table"
             loading={loading}
             rowKey={'id'}
             dataSource={data}
+            size="small"
             columns={columns}
             pagination={paginationProps}
           />
@@ -330,7 +574,7 @@ class TableList extends PureComponent {
         <div className="page-header">
           <PageHeader
             title={<p>
-              产品</p>}
+              RTU基板列表</p>}
           />
         </div>
 
@@ -347,6 +591,95 @@ class TableList extends PureComponent {
           }
 
         </div>
+        <Drawer
+          title={`RTU基板类型管理`}
+          placement="right"
+          destroyOnClose
+          onClose={() => {
+            this.setState({
+              infoModal: false,
+            });
+          }}
+
+          width={800}
+          visible={this.state.infoModal}
+        >
+          <SubstrateTypes />
+        </Drawer>
+        <Modal
+          title={'新建RTU基板'}
+          visible={this.state.addModal}
+          centered
+          onCancel={()=> {
+            this.setState({addModal: false})
+          }}
+          onOk={this.handleAdd}
+        >
+          <AddOrEditSubstrate
+            wrappedComponentRef={(inst) => this.AddForm = inst}/>
+
+        </Modal>
+        <Modal
+          title={'批量新建RTU基板'}
+          visible={this.state.mulAddModal}
+          centered
+          onCancel={()=> {
+            this.setState({mulAddModal: false})
+          }}
+          onOk={this.handleMulAdd}
+        >
+          <MulAddSubstrate
+            wrappedComponentRef={(inst) => this.MulAddForm = inst}/>
+
+        </Modal>
+        <Modal
+          title={'编辑: ' + this.state.editRecord.name }
+          destroyOnClose
+          visible={this.state.editModal}
+          centered
+          onOk={this.handleEdit}
+          onCancel={()=> {
+            this.setState({editModal: false, editRecord: {}})
+          }}
+        >
+          <AddOrEditSubstrate editRecord={this.state.editRecord}
+                              wrappedComponentRef={(inst) => this.EditForm = inst}/>
+
+        </Modal>
+        <Drawer
+          title={`${this.state.editRecord && this.state.editRecord.serial_number} 详情`}
+          placement="right"
+          destroyOnClose
+          onClose={() => {
+            this.setState({
+              detailModal: false,
+              editRecord: {},
+            });
+          }}
+
+          width={550}
+          visible={this.state.detailModal}
+        >
+          <Descriptions column={2} title={<div>
+            <span></span>
+          </div>} bordered>
+            <Descriptions.Item label="序列号"  span={2}>{editRecord.serial_number}</Descriptions.Item>
+            <Descriptions.Item label="批次" span={2}>{editRecord.batch}</Descriptions.Item>
+            <Descriptions.Item label="RTU基板型号" span={2}>{editRecord.substrate_type?editRecord.substrate_type.name:''}</Descriptions.Item>
+            <Descriptions.Item label="RTU基板产品代码" span={2}>{editRecord.substrate_type?editRecord.substrate_type.product_code:''}</Descriptions.Item>
+            <Descriptions.Item label="是否正在升级" span={2}>{editRecord.is_upgrading=== 1 ?<Badge status={ 'processing'}
+                                                                                                   text={ '正在升级' }/>:""}</Descriptions.Item>
+            <Descriptions.Item label="当前固件版本" span={2}>{editRecord.current_firmware_version}</Descriptions.Item>
+            <Descriptions.Item label="当前固件GUID" span={2}>{editRecord.current_firmware_guid}</Descriptions.Item>
+            <Descriptions.Item label="更新状态" span={2}>{editRecord.upgrade_state}</Descriptions.Item>
+            <Descriptions.Item label="更新错误代码" span={2}>{editRecord.trouble_code}</Descriptions.Item>
+            <Descriptions.Item label="更新的固件版本" span={2}>{editRecord.upgrade_firmware_version}</Descriptions.Item>
+            <Descriptions.Item label="更新的固件GUID" span={2}>{editRecord.upgrade_firmware_guid}</Descriptions.Item>
+            <Descriptions.Item label="创建时间" span={2}>{editRecord.created_at}</Descriptions.Item>
+            <Descriptions.Item label="备注" span={2}>{editRecord.remark}</Descriptions.Item>
+
+          </Descriptions>
+        </Drawer>
       </div>
     );
   }

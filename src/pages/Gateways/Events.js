@@ -15,12 +15,12 @@ import {
   Alert,
   PageHeader,
   Modal,
-  message,
+  Drawer,
   Badge,
   Divider,
   Steps,
   Radio,
-  Table, Tag,notification,Card
+  Table, Tag, notification, Card, Descriptions,
 } from 'antd';
 import styles from './Index.less';
 import request from '@/utils/request';
@@ -121,7 +121,7 @@ class TableList extends PureComponent {
       console.log(response);
       if(response.status===200){
         notification.success({
-          message: formatMessage({id: 'app.successfully'}, {type:'设备固件更新'}),
+          message: formatMessage({id: 'app.successfully'}, {type:'设备固件更新命令发送'}),
         });
         this.setState({
           editModal:false
@@ -147,16 +147,37 @@ class TableList extends PureComponent {
         dataIndex: 'imei',
       },
       {
-        title: '固件版本',
+        title: '当前固件版本',
         dataIndex: 'firmware_version',
       },
       {
-        title: '备注',
-        dataIndex: 'remark',
+        title: '更新状态',
+        dataIndex: 'upgrade_state',
+      },
+      {
+        title: '更新的固件版本',
+        dataIndex: 'new_firmware_version',
       },
       {
         title: '创建时间',
         dataIndex: 'created_at',
+      },
+      {
+        title:<FormattedMessage
+          id="app.operate"
+        />,
+        dataIndex: 'operate',
+        render:(text,record)=>{
+          return <div>
+            <Button onClick={()=>{
+              this.setState({
+                editRecord:record,
+                infoModal:true
+              })
+            }} style={{marginRight:'5px'}} type="primary" icon='eye'
+                    size="small">详情</Button>
+          </div>
+        }
       },
     ];
     const paginationProps = {
@@ -190,11 +211,15 @@ class TableList extends PureComponent {
           已选 {this.state.selectedRowKeys.length} 个设备
           <Button onClick={  ()=>{
             if(this.state.selectedRowKeys.length===0){
+              notification.error({
+                message:'请先选择设备',
+              });
               return false
             }
             this.setState({
             editModal:true
-          })} } icon={'printer'} type={'primary'} style={{marginLeft:'10px'}}>批量更新设备固件</Button>
+          })} } icon={'printer'}  style={{marginLeft:'10px'}}>批量更新设备固件</Button>
+          <Button  type={'primary'}>批量更新设备固件</Button>
         </div>
         <Table
           rowSelection={rowSelection}
@@ -211,6 +236,7 @@ class TableList extends PureComponent {
         />
       </div>
     </Card>
+    const editRecord=this.state.editRecord
     return (
       <div>
         <div className="info-page-container">
@@ -229,6 +255,36 @@ class TableList extends PureComponent {
                   wrappedComponentRef={(inst) => this.EditDevice = inst}/>
 
         </Modal>
+        <Drawer
+          title={`${editRecord && editRecord.name} 详情`}
+          placement="right"
+          destroyOnClose
+          onClose={() => {
+            this.setState({
+              infoModal: false,
+              editRecord: {},
+            });
+          }}
+
+          width={550}
+          visible={this.state.infoModal}
+        >
+          <Descriptions column={2} title={<div>
+            <span></span>
+          </div>} bordered>
+            <Descriptions.Item label="名称"  span={2}>{editRecord.name}</Descriptions.Item>
+            <Descriptions.Item label="IMEI" span={2}>{editRecord.imei}</Descriptions.Item>
+            <Descriptions.Item label="当前固件版本" span={2}>{editRecord.firmware_version}</Descriptions.Item>
+            <Descriptions.Item label="当前固件GUID" span={2}>{editRecord.firmware_guid}</Descriptions.Item>
+            <Descriptions.Item label="更新状态" span={2}>{editRecord.upgrade_state}</Descriptions.Item>
+            <Descriptions.Item label="更新错误代码" span={2}>{editRecord.upgrade_err_code}</Descriptions.Item>
+            <Descriptions.Item label="更新的固件版本" span={2}>{editRecord.new_firmware_version}</Descriptions.Item>
+            <Descriptions.Item label="更新的固件GUID" span={2}>{editRecord.new_firmware_guid}</Descriptions.Item>
+            <Descriptions.Item label="创建时间" span={2}>{editRecord.created_at}</Descriptions.Item>
+            <Descriptions.Item label="备注" span={2}>{editRecord.remark}</Descriptions.Item>
+
+          </Descriptions>
+        </Drawer>
       </div>
     );
   }

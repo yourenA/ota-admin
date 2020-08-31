@@ -2,10 +2,11 @@ import request from '@/utils/request';
 
 
 export async function query({...resetParams}) {
-  return request(`//historical_data`,{
+  return request(`/substrate_upgrade_logs`,{
     method:'GET',
     params:{
-      ...resetParams
+      ...resetParams,
+      order_direction:'desc'
     }
   });
 }

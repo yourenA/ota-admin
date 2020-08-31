@@ -88,7 +88,7 @@ class TableList extends PureComponent {
       console.log(response);
       if(response.status===200){
         notification.success({
-          message: formatMessage({id: 'app.successfully'}, {type:'设备固件更新'}),
+          message: formatMessage({id: 'app.successfully'}, {type:'设备固件更新命令发送'}),
         });
         this.setState({
           editModal:false

@@ -53,7 +53,7 @@ class AddPoliciesForm extends Component {
             <Select>
               {
                 this.state.data.map(function(item,index) {
-                  return <Option key={index} value={item.id}>{item.version} ({item.guid})</Option>
+                  return <Option key={index} value={item.id}>{item.version}</Option>
                 })
               }
 

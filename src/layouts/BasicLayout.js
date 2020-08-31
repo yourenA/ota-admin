@@ -11,9 +11,8 @@ import { enquireScreen, unenquireScreen } from 'enquire-js';
 import { formatMessage } from 'umi/locale';
 import SiderMenu from '@/components/SiderMenu';
 import Authorized from '@/utils/Authorized';
-import SettingDrawer from '@/components/SettingDrawer';
 import logo from '../images/logo.png';
-import logo_white from '../images/logo-white.png';
+import logo_white from '../images/logo.png';
 import up from '../images/up.png';
 import Footer from './Footer';
 import Header from './Header';
@@ -200,7 +199,7 @@ class BasicLayout extends React.PureComponent {
       id: currRouterData.locale || currRouterData.name,
       defaultMessage: currRouterData.name,
     });
-    return `${'广州辂轺OTA'}`;
+    return `${'广州辂轺RTU'}`;
   };
 
   getLayoutStyle = () => {

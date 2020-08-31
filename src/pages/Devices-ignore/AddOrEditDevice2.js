@@ -39,22 +39,38 @@ class SearchList extends Component {
       EUIRawValue: '',
       KeyCleave: null,
       KeyRawValue: '',
+      data:[],
       fileList: [],
     }
   }
 
   componentDidMount() {
-
+    const that = this;
+    request(`/all_substrate_types`,{
+      method:'GET',
+      params:{
+        order_direction:'desc'
+      }
+    }).then((response)=>{
+      if(response.status===200){
+        that.setState({
+          data:response.data.data
+        })
+      }
+    });
   }
   handleSubmit = ()=> {
     this.props.form.validateFields({force: true},
       (err, values) => {
         if (!err) {
+          console.log('values',values)
           let formData = new FormData();
           formData.append("firmware_file", values.file.file);
-          formData.append("guid", values.guid);
-          formData.append("version", values.version);
           formData.append("remark", values.remark);
+          formData.append("status", values.status);
+          for(let i=0;i<values.applicable_substrate_types.length;i++){
+            formData.append("applicable_substrate_types[]", values.applicable_substrate_types[i]);
+          }
           request(`/firmwares`, {
             method: 'POST',
             data: formData
@@ -111,7 +127,7 @@ class SearchList extends Component {
             title={  <Breadcrumb separator=">">
               <Breadcrumb.Item style={{cursor: 'pointer'}}
                                onClick={() => this.props.history.goBack()}>
-                固件
+                固件列表
               </Breadcrumb.Item>
               <Breadcrumb.Item>
                 新建固件
@@ -138,20 +154,26 @@ class SearchList extends Component {
                   )}
                 </div>
               </Form.Item>
-              <Form.Item label={'GUID'} {...formItemLayout}>
-                {getFieldDecorator(`guid`, {
-                  rules: [{required: true, message: '请输入GUID'}],
-                  initialValue: this.props.editRecord ? this.props.editRecord.guid : '',
+              <Form.Item label={'状态'} {...formItemLayout}>
+                {getFieldDecorator(`status`, {
+                  rules: [{required: true, message: '请选择状态'}],
+                  initialValue: '1',
                 })(
-                  <Input/>
+                  <Select>
+                    <Option value={'1'}>启用</Option>
+                    <Option value={'-1'}>停用</Option>
+                  </Select>
                 )}
               </Form.Item>
-              <Form.Item label={'版本'} {...formItemLayout}>
-                {getFieldDecorator(`version`, {
-                  rules: [{required: true, message: '请输入版本'}],
-                  initialValue: this.props.editRecord ? this.props.editRecord.version : '',
+              <Form.Item label={'适用的RTU基板型号'} {...formItemLayout}>
+                {getFieldDecorator(`applicable_substrate_types`, {
+                  rules: [{required: true, message: '请选择基板型号'}],
                 })(
-                  <Input/>
+                  <Select  mode="multiple" >
+                    {this.state.data.map((item,index)=>{
+                      return <Option key={index} value={item.id}>{item.name}/{item.product_code}</Option>
+                    })}
+                  </Select>
                 )}
               </Form.Item>
               <Form.Item label={

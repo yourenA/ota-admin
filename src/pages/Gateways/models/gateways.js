@@ -1,4 +1,4 @@
-import { query,add,remove,edit ,editStatus,resetPassword } from '@/services/gateways';
+import { query,add,remove,edit ,editStatus,resetPassword ,mulAdd} from '@/services/gateways';
 
 export default {
   namespace: 'gateways',
@@ -35,6 +35,15 @@ export default {
         if (callback) callback();
       }
 
+    },
+    *mulAdd({ payload, callback }, { call, put }) {
+      const response = yield call(mulAdd, payload);
+
+      console.log(response)
+      if(response.status===200){
+        if (callback) callback();
+      }else{
+      }
     },
     *add({ payload, callback }, { call, put }) {
       const response = yield call(add, payload);
