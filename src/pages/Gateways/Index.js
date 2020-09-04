@@ -540,8 +540,11 @@ class TableList extends PureComponent {
         <div className={styles.tableList} >
           <div className={styles.tableListForm} >{this.renderForm()}</div>
           <div className={styles.tableListOperator}>
+              已选 {this.state.selectedRowKeys.length} 个序列号
+              <Button onClick={()=>{this.selectMethod(1)} } icon={'printer'} style={{marginLeft:'10px'}}>批量打印序列号</Button>
+              <Button  onClick={()=>{this.selectMethod(2)} }  icon={'cloud-sync'}   type={'primary'} >批量更新RTU基板</Button>
             <Button icon="setting" type="danger"
-                    style={{marginRight:'8px'}} onClick={
+                    style={{marginRight:'-9px',float:'right'}} onClick={
               ()=>{
                 this.setState({
                   infoModal:true
@@ -551,9 +554,6 @@ class TableList extends PureComponent {
             }>
               RTU基板类型管理
             </Button>
-              已选 {this.state.selectedRowKeys.length} 个序列号
-              <Button onClick={()=>{this.selectMethod(1)} } icon={'printer'} style={{marginLeft:'10px'}}>批量打印序列号</Button>
-              <Button  onClick={()=>{this.selectMethod(2)} }  icon={'cloud-sync'}   type={'primary'} >批量更新RTU基板</Button>
           </div>
           <Table
             rowSelection={rowSelection}
