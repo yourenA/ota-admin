@@ -28,6 +28,7 @@ import {
 import request from '@/utils/request';
 import AddSubstrateTypes from './addOrType'
 import EditSubstrateTypes from './addOrType'
+import Update from './Update';
 const { confirm } = Modal;
 
 /* eslint react/no-multi-comp:0 */
@@ -149,13 +150,19 @@ class SubstrateTypes extends PureComponent {
   }
   selectMethod=(record)=>{
     const that=this
+    const formValues = this.updateForm.props.form.getFieldsValue();
+    if(!formValues.firmware_id){
+      return false
+    }
+
     confirm({
       title: '确定要发送更新RTU基板命令吗?',
       onOk() {
         request(`/upgrade_substrate`, {
           method: 'POST',
           data:{
-            substrate_type_id:record.id
+            substrate_type_id:record.id,
+            firmware_id:formValues.firmware_id
           }
         }).then((response)=> {
           console.log(response);
@@ -163,6 +170,9 @@ class SubstrateTypes extends PureComponent {
             notification.success({
               message: formatMessage({id: 'app.successfully'}, {type:'RTU基板更新命令发送'}),
             });
+            that.setState({
+              updateModal:false
+            })
           }
         })
       },
@@ -208,7 +218,12 @@ class SubstrateTypes extends PureComponent {
                     size="small"><FormattedMessage
               id="app.edit"
             /></Button>
-            <Button  size="small"  style={{marginRight:'5px'}} onClick={()=>{this.selectMethod(record)} }  icon={'cloud-sync'}   type={'primary'} >更新RTU基板</Button>
+            <Button  size="small"  style={{marginRight:'5px'}} onClick={()=>{
+              this.setState({
+                updateModal:true,
+                editRecord:record
+              })
+            }}   icon={'cloud-sync'}   type={'primary'} >更新RTU基板</Button>
             <Popconfirm title={formatMessage({id: 'app.delete.info'})}
                         onConfirm={()=>this.handleDelete(record)}>
               <Button  type="danger" icon='delete'
@@ -268,6 +283,20 @@ class SubstrateTypes extends PureComponent {
         >
           <EditSubstrateTypes editRecord={this.state.editRecord}
                          wrappedComponentRef={(inst) => this.EditForm = inst}/>
+
+        </Modal>
+        <Modal
+          title={'更新RTU基板' }
+          destroyOnClose
+          visible={this.state.updateModal}
+          centered
+          onOk={()=>this.selectMethod(this.state.editRecord)}
+          onCancel={()=> {
+            this.setState({updateModal: false, editRecord: {}})
+          }}
+        >
+          <Update editRecord={this.state.editRecord}
+                  wrappedComponentRef={(inst) => this.updateForm = inst}/>
 
         </Modal>
       </div>

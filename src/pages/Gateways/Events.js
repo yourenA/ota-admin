@@ -93,9 +93,11 @@ class TableList extends PureComponent {
     dispatch({
       type: 'gateway_events/fetch',
       payload: {
-        id: this.props.history.location.query.id,
+        rtuId: this.props.history.location.query.rtu_id,
         ...values,
-        order_direction:'desc'
+        size:values.per_page,
+        page:Number(values.page)-1,
+        sort:"time,desc"
       },
       callback: function () {
         console.log('handleSearch callback')
@@ -108,90 +110,80 @@ class TableList extends PureComponent {
       }
     });
   }
-  deviceUpdate=()=>{
-    const formValues = this.EditDevice.props.form.getFieldsValue();
-    console.log('formValues', formValues)
-    request(`/upgrade_device`, {
-      method: 'POST',
-      data:{
-        firmware_id:formValues.firmware_id,
-        device_ids:this.state.selectedRowKeys
-      }
-    }).then((response)=> {
-      console.log(response);
-      if(response.status===200){
-        notification.success({
-          message: formatMessage({id: 'app.successfully'}, {type:'设备固件更新命令发送'}),
-        });
-        this.setState({
-          editModal:false
-        })
-        this.handleSearch({
-          page: this.state.page,
-          per_page: this.state.per_page,
-        })
-      }
-    })
-  }
   render() {
     const {
       gateway_events: {data, loading, meta, pageLoaded},
     } = this.props;
     const columns = [
       {
-        title: '名称',
-        dataIndex: 'name',
+        title: '序号',
+        width: 50,
+        key: '_index',
+        render: (text, record,index) => {
+          const {
+            gateway_events: {meta},
+          } = this.props;
+          return <p className={'index'}>{((meta.number ) * meta.size) + (index + 1)}</p>;
+        },
       },
       {
-        title: 'IMEI',
-        dataIndex: 'imei',
+        title: 'rtuId',
+        dataIndex: 'rtuId',
+        key: 'rtuId',
       },
       {
-        title: '当前固件版本',
-        dataIndex: 'firmware_version',
+        title: '时间',
+        dataIndex: 'time',
+        key: 'time',
       },
       {
-        title: '更新状态',
-        dataIndex: 'upgrade_state',
+        title: '错误代码',
+        dataIndex: 'lastTroubleCode',
+        key: 'lastTroubleCode',
       },
       {
-        title: '更新的固件版本',
-        dataIndex: 'new_firmware_version',
+        title: '文件长度',
+        dataIndex: 'lastFileReceiveLen',
+        key: 'lastFileReceiveLen',
       },
       {
-        title: '创建时间',
-        dataIndex: 'created_at',
-      },
-      {
-        title:<FormattedMessage
-          id="app.operate"
-        />,
-        dataIndex: 'operate',
+        title: '当前固件',
+        dataIndex: 'currentFirmwareVersion',
+        key: 'currentFirmwareVersion',
         render:(text,record)=>{
           return <div>
-            <Button onClick={()=>{
-              this.setState({
-                editRecord:record,
-                infoModal:true
-              })
-            }} style={{marginRight:'5px'}} type="primary" icon='eye'
-                    size="small">详情</Button>
+            <p>版 本 : {text}</p>
+            <p>GUID : { record.currentFirmwareGuid}</p>
           </div>
         }
       },
+      {
+        title: '最新固件',
+        dataIndex: 'lastFirmwareVersion',
+        key: 'lastFirmwareVersion',
+        render:(text,record)=>{
+          return <div>
+            <p>版 本 : {text}</p>
+            <p>GUID : { record.lastFirmwareGuid}</p>
+          </div>
+        }
+      },
+
     ];
     const paginationProps = {
       showSizeChanger: true,
       showQuickJumper: true,
       showTotal: total => formatMessage({id: 'app.pagination'}, {total}),
-      pageSize: meta.per_page,
-      total: meta.total,
+      pageSize: meta.size,
+      total: meta.totalElements,
       current: this.state.page,
       onChange: (page, pageSize)=> {
-        this.handleSearch({page, per_page: pageSize, date: this.state.date})
+        this.handleSearch({page, per_page: pageSize, start_date: this.state.start_date, end_date: this.state.end_date, dev_eui: this.state.dev_eui,sort_field: this.state.sort_field,
+          sort_type: this.state.sort_type})
       },
       onShowSizeChange: (page, pageSize)=> {
-        this.handleSearch({page, per_page: pageSize,date: this.state.date})
+        this.handleSearch({page, per_page: pageSize, start_date: this.state.start_date, end_date: this.state.end_date, dev_eui: this.state.dev_eui,sort_field: this.state.sort_field,
+          sort_type: this.state.sort_type})
       },
     };
     const {  selectedRowKeys } = this.state;
@@ -201,28 +193,13 @@ class TableList extends PureComponent {
     };
     const renderTable = <Card type="inner" title={
       <div>
-        <Icon type="appstore" />
-        设备列表
+        <Icon type="history" />
+        升级日志
       </div>
 
     } bordered={false}>
-      <div className={styles.tableList} style={{padding: '12px'}}>
-        <div style={{marginBottom:'10px'}}>
-          已选 {this.state.selectedRowKeys.length} 个设备
-          <Button onClick={  ()=>{
-            if(this.state.selectedRowKeys.length===0){
-              notification.error({
-                message:'请先选择设备',
-              });
-              return false
-            }
-            this.setState({
-            editModal:true
-          })} } icon={'printer'}  style={{marginLeft:'10px'}}>批量更新设备固件</Button>
-          <Button  type={'primary'}>批量更新设备固件</Button>
-        </div>
+      <div className={styles.tableList} >
         <Table
-          rowSelection={rowSelection}
           style={{backgroundColor: '#fff'}}
           loading={loading}
           rowKey={(record)=> {

@@ -110,11 +110,17 @@ class TableList extends PureComponent {
       type: 'whole_data/fetch',
       payload: {
         ...values,
+        size:values.per_page,
+        page:Number(values.page)-1,
+        sort:"time,desc"
+
       },
       callback: function () {
         console.log('handleSearch callback')
         that.setState({
           ...values,
+          size:values.per_page,
+          page:Number(values.page)-1
         });
         if (controlExpend) {
           if (that.state.expend === 'expend') {
@@ -273,7 +279,8 @@ class TableList extends PureComponent {
 
 
   renderForm() {
-    return this.renderSimpleForm()
+    // return this.renderSimpleForm()
+    return ''
   }
 
   onExpand = (expanded, record)=> {
@@ -323,8 +330,8 @@ class TableList extends PureComponent {
       showSizeChanger: true,
       showQuickJumper: true,
       showTotal: total => formatMessage({id: 'app.pagination'}, {total}),
-      pageSize: meta.per_page,
-      total: meta.total,
+      pageSize: meta.size,
+      total: meta.totalElements,
       current: this.state.page,
       onChange: (page, pageSize)=> {
         this.handleSearch({page, per_page: pageSize, start_date: this.state.start_date, end_date: this.state.end_date, dev_eui: this.state.dev_eui,sort_field: this.state.sort_field,
@@ -351,72 +358,52 @@ class TableList extends PureComponent {
           const {
             whole_data: {meta},
           } = this.props;
-          return <p className={'index'}>{((meta.current_page - 1) * meta.per_page) + (index + 1)}</p>;
+          return <p className={'index'}>{((meta.number ) * meta.size) + (index + 1)}</p>;
         },
       },
       {
-        title: '序列号',
-        dataIndex: 'serial_number',
-        key: 'serial_number',
-        render: (text, record)=> {
-          return record.substrate.serial_number
+        title: 'rtuId',
+        dataIndex: 'rtuId',
+        key: 'rtuId',
+      },
+      {
+        title: '时间',
+        dataIndex: 'time',
+        key: 'time',
+      },
+      {
+        title: '错误代码',
+        dataIndex: 'lastTroubleCode',
+        key: 'lastTroubleCode',
+      },
+      {
+        title: '文件长度',
+        dataIndex: 'lastFileReceiveLen',
+        key: 'lastFileReceiveLen',
+      },
+      {
+        title: '当前固件',
+        dataIndex: 'currentFirmwareVersion',
+        key: 'currentFirmwareVersion',
+        render:(text,record)=>{
+          return <div>
+            <p>版 本 : {text}</p>
+            <p>GUID : { record.currentFirmwareGuid}</p>
+          </div>
         }
       },
       {
-        title: '型号',
-        dataIndex: 'substrate_type',
-        key: 'substrate_type',
-        render: (text, record)=> {
-          return  <Tag color="purple" >{record.substrate.substrate_type.name}</Tag>
+        title: '最新固件',
+        dataIndex: 'lastFirmwareVersion',
+        key: 'lastFirmwareVersion',
+        render:(text,record)=>{
+          return <div>
+            <p>版 本 : {text}</p>
+            <p>GUID : { record.lastFirmwareGuid}</p>
+          </div>
         }
       },
-      {
-        title: '产品码',
-        dataIndex: 'product_code',
-        key: 'product_code',
-        render: (text, record)=> {
-          return record.substrate.substrate_type.product_code
-        }
-      },
-      {
-        title: '当前固件版本',
-        dataIndex: 'current_firmware_version',
-        key: 'current_firmware_version',
-      },
-      {
-        title: '新固件版本',
-        dataIndex: 'new_firmware_version',
-        key: 'new_firmware_version',
-      },
-      {
-        title: '状态',
-        dataIndex: 'status',
-        key: 'status',
-        render: (text, record)=> {
-            return this.renderStatus(text)
-        }
-      },
-      {
-        title: '创建时间',
-        dataIndex: 'created_at',
-        key: 'created_at',
-      },
-      {
-        title: <FormattedMessage
-          id="app.operate"
-          defaultMessage="操作"
-        />,
-        dataIndex: 'operate',
-        render: (text, record)=> {
-          return  <Button onClick={()=>{
-            this.setState({
-              editRecord:record,
-              detailModal:true
-            })
-          }} style={{marginRight:'5px'}} type="primary" icon='eye'
-                          size="small">详情</Button>
-        }
-      },
+
     ];
     const renderTable2 = <div>
       <div >

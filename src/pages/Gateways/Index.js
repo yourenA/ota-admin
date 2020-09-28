@@ -35,6 +35,7 @@ import CardContent from '@material-ui/core/CardContent';
 import  SubstrateTypes from './SubstrateTypes.js'
 import  MulAddSubstrate from './MulAddSubstrate.js'
 import AddOrEditSubstrate from './AddOrEditSubstrate';
+import Update from './Update';
 const FormItem = Form.Item;
 const Option = Select.Option;
 const { confirm } = Modal;
@@ -407,14 +408,21 @@ class TableList extends PureComponent {
       // window.location.href=`${window.location.origin}/print?productCode=${firstCode}&numbers=${numberArr}`
       // ipcRenderer.send('openSNModal',firstCode,numberArr);
     }else if(type===2){
-      const that=this
+      const that=this;
+      const formValues = this.updateForm.props.form.getFieldsValue();
+      if(!formValues.firmware_id){
+        return false
+      }
       confirm({
         title: '确定要发送更新RTU基板命令吗?',
+        centered:true,
         onOk() {
+          console.log(formValues)
           request(`/upgrade_substrate`, {
             method: 'POST',
             data:{
-              substrate_ids:that.state.selectedRowKeys
+              substrate_ids:that.state.selectedRowKeys,
+              firmware_id:formValues.firmware_id
             }
           }).then((response)=> {
             console.log(response);
@@ -425,6 +433,9 @@ class TableList extends PureComponent {
               that.handleSearch({
                 page: that.state.page,
                 per_page: that.state.per_page,
+              })
+              that.setState({
+                updateModal:false
               })
             }
           })
@@ -468,15 +479,14 @@ class TableList extends PureComponent {
         render: (text, record)=> {
           return  <Tag color="purple" >{record.substrate_type.name}</Tag>
         }
-      },
-      {
+      },{
         title: 'RTU基板型号产品码',
         dataIndex: 'substrate_type2',
         render: (text, record)=> {
           return record.substrate_type.product_code
         }
       },
-      {
+    /*  {
         title: '当前固件版本',
         dataIndex: 'current_firmware_version',
       },
@@ -487,12 +497,16 @@ class TableList extends PureComponent {
           return text === 1 ?<Badge status={ 'processing'}
                                    text={ '正在升级' }/>:""
         }
-      },
+      },*/
       {
         title:'操作',
         dataIndex: 'operate',
         render:(text,record)=>{
           return <div>
+            <Button onClick={()=>{
+              this.props.dispatch(routerRedux.push(`/substrates/info/history?rtu_id=${record.rtu_id}&serial_number=${record.serial_number}`));
+            }} style={{marginRight:'5px'}} type="primary" icon='history'
+                    size="small">升级日志</Button>
             <Button onClick={()=>{
               this.setState({
                 editRecord:record,
@@ -527,6 +541,7 @@ class TableList extends PureComponent {
       showTotal: total => formatMessage({id: 'app.pagination'}, {total}),
       pageSize: meta.per_page,
       total: meta.total,
+      pageSizeOptions:['30','50','100','200'],
       current: this.state.page,
       onChange: (page, pageSize)=> {
         this.handleSearch({page, per_page: pageSize, name: this.state.name, gateway_id: this.state.gateway_id})
@@ -542,7 +557,9 @@ class TableList extends PureComponent {
           <div className={styles.tableListOperator}>
               已选 {this.state.selectedRowKeys.length} 个序列号
               <Button onClick={()=>{this.selectMethod(1)} } icon={'printer'} style={{marginLeft:'10px'}}>批量打印序列号</Button>
-              <Button  onClick={()=>{this.selectMethod(2)} }  icon={'cloud-sync'}   type={'primary'} >批量更新RTU基板</Button>
+              <Button  onClick={()=>{this.setState({
+                updateModal:true
+              })} }  icon={'cloud-sync'}   type={'primary'} >批量更新RTU基板</Button>
             <Button icon="setting" type="danger"
                     style={{marginRight:'-9px',float:'right'}} onClick={
               ()=>{
@@ -633,7 +650,7 @@ class TableList extends PureComponent {
 
         </Modal>
         <Modal
-          title={'编辑: ' + this.state.editRecord.name }
+          title={'编辑: ' + this.state.editRecord.serial_number }
           destroyOnClose
           visible={this.state.editModal}
           centered
@@ -644,6 +661,21 @@ class TableList extends PureComponent {
         >
           <AddOrEditSubstrate editRecord={this.state.editRecord}
                               wrappedComponentRef={(inst) => this.EditForm = inst}/>
+
+        </Modal>
+
+        <Modal
+          title={'更新RTU基板' }
+          destroyOnClose
+          visible={this.state.updateModal}
+          centered
+          onOk={()=>this.selectMethod(2)}
+          onCancel={()=> {
+            this.setState({updateModal: false, editRecord: {}})
+          }}
+        >
+          <Update editRecord={this.state.editRecord}
+                              wrappedComponentRef={(inst) => this.updateForm = inst}/>
 
         </Modal>
         <Drawer
@@ -669,9 +701,9 @@ class TableList extends PureComponent {
             <Descriptions.Item label="RTU基板产品代码" span={2}>{editRecord.substrate_type?editRecord.substrate_type.product_code:''}</Descriptions.Item>
             <Descriptions.Item label="是否正在升级" span={2}>{editRecord.is_upgrading=== 1 ?<Badge status={ 'processing'}
                                                                                                    text={ '正在升级' }/>:""}</Descriptions.Item>
-            <Descriptions.Item label="当前固件版本" span={2}>{editRecord.current_firmware_version}</Descriptions.Item>
+          {/*  <Descriptions.Item label="当前固件版本" span={2}>{editRecord.current_firmware_version}</Descriptions.Item>
             <Descriptions.Item label="当前固件GUID" span={2}>{editRecord.current_firmware_guid}</Descriptions.Item>
-            <Descriptions.Item label="更新状态" span={2}>{editRecord.upgrade_state}</Descriptions.Item>
+            <Descriptions.Item label="更新状态" span={2}>{editRecord.upgrade_state}</Descriptions.Item>*/}
             <Descriptions.Item label="更新错误代码" span={2}>{editRecord.trouble_code}</Descriptions.Item>
             <Descriptions.Item label="更新的固件版本" span={2}>{editRecord.upgrade_firmware_version}</Descriptions.Item>
             <Descriptions.Item label="更新的固件GUID" span={2}>{editRecord.upgrade_firmware_guid}</Descriptions.Item>

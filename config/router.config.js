@@ -76,7 +76,7 @@ export default [
             component: './Gateways/Info',
             routes: [
               {
-                path: '/substrates/info/devices',
+                path: '/substrates/info/history',
                 name: 'events',
                 component: './Gateways/Events',
               },

@@ -4,7 +4,7 @@ export default {
   namespace: 'whole_data',
   state: {
     data:[],
-    meta: {total: 0, per_page: 0},
+    meta: {totalElements: 0, size: 0,number:0},
     loading: true,
     pageLoaded:false
 
@@ -84,8 +84,8 @@ export default {
     save(state, action) {
       return {
         ...state,
-        data: action.payload.data,
-        meta:action.payload.meta
+        data: action.payload._embedded.firmwareUpgradeStatuses,
+        meta:action.payload.page,
       };
     },
     saveAndPush(state, action) {

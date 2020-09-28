@@ -1,8 +1,8 @@
-import request from '@/utils/request';
+import request from '@/utils/requestSu';
 
 
 export async function query({...resetParams}) {
-  return request(`/substrate_upgrade_logs`,{
+  return request(``,{
     method:'GET',
     params:{
       ...resetParams,

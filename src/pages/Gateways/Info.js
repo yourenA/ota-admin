@@ -11,8 +11,8 @@ const TabPane = Tabs.TabPane;
 class SearchList extends Component {
   constructor(props) {
     super(props);
-    this.gateway_id = this.props.history.location.query.gateway_id
-    this.id = this.props.history.location.query.id
+    this.rtu_id = this.props.history.location.query.rtu_id
+    this.serial_number = this.props.history.location.query.serial_number
     const pathname = this.props.history.location.pathname.split('/')
     console.log('pathname', pathname)
     this.state = {
@@ -26,16 +26,16 @@ class SearchList extends Component {
   }
 
   componentDidMount() {
-    request(`/products/${this.id}`, {
-      method: 'GET',
-    }).then((response)=> {
-      console.log(response);
-      if(response.status===200){
-        this.setState({
-          name:response.data.data.name
-        })
-      }
-    })
+    // request(`/products/${this.id}`, {
+    //   method: 'GET',
+    // }).then((response)=> {
+    //   console.log(response);
+    //   if(response.status===200){
+    //     this.setState({
+    //       name:response.data.data.name
+    //     })
+    //   }
+    // })
   }
 
   handleTabChange = (e) => {
@@ -65,9 +65,9 @@ class SearchList extends Component {
             title={  <Breadcrumb    separator=">">
               <Breadcrumb.Item style={{cursor: 'pointer'}}
                                onClick={() => this.props.history.goBack()}>
-               产品
+                RTU基板列表
               </Breadcrumb.Item>
-              <Breadcrumb.Item>{`${this.state.name}`}</Breadcrumb.Item>
+              <Breadcrumb.Item>{`${this.serial_number}`} 升级日志</Breadcrumb.Item>
             </Breadcrumb>}
           />
         </div>
@@ -91,7 +91,7 @@ class SearchList extends Component {
 
          </Tabs>*/}
         <div className="info-page-container">
-          <div className="page-router-tab">
+         {/* <div className="page-router-tab">
             <Radio.Group  value={this.state.activeKey} onChange={this.handleTabChange} buttonStyle="solid" size="large">
               <Radio.Button value="devices">
                 设备
@@ -100,7 +100,7 @@ class SearchList extends Component {
                 命令
               </Radio.Button>
             </Radio.Group>
-          </div>
+          </div>*/}
           {this.props.children}
 
         </div>
