@@ -699,6 +699,7 @@ class TableList extends PureComponent {
             <Descriptions.Item label="批次" span={2}>{editRecord.batch}</Descriptions.Item>
             <Descriptions.Item label="RTU基板型号" span={2}>{editRecord.substrate_type?editRecord.substrate_type.name:''}</Descriptions.Item>
             <Descriptions.Item label="RTU基板产品代码" span={2}>{editRecord.substrate_type?editRecord.substrate_type.product_code:''}</Descriptions.Item>
+            <Descriptions.Item label="RTU ID" span={2}>{editRecord.rtu_id?editRecord.rtu_id:''}</Descriptions.Item>
             <Descriptions.Item label="是否正在升级" span={2}>{editRecord.is_upgrading=== 1 ?<Badge status={ 'processing'}
                                                                                                    text={ '正在升级' }/>:""}</Descriptions.Item>
           {/*  <Descriptions.Item label="当前固件版本" span={2}>{editRecord.current_firmware_version}</Descriptions.Item>
